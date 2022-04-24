@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:bluetooth_control_path/components/button_control.dart';
+import 'package:bluetooth_control_path/components/joystick_pad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue/flutter_blue.dart';
@@ -21,6 +23,7 @@ class ControlPadPage extends StatefulWidget {
 
 class _ControlPadPageState extends State<ControlPadPage> {
   BluetoothCharacteristic? writeChar;
+  bool writing = false;
 
   void _setup() {
     SystemChrome.setPreferredOrientations([
@@ -80,8 +83,18 @@ class _ControlPadPageState extends State<ControlPadPage> {
     return Row(
       children: [
         Expanded(
-          child: Container(
-            color: Colors.blue,
+          child: JoystickPad(
+            onUpdate: (String data) async {
+              if (writeChar != null && !writing) {
+                try {
+                  writing = true;
+                  await writeChar!.write(utf8.encode(data));
+                  writing = false;
+                } catch (e) {
+                  log(e.toString());
+                }
+              }
+            },
           ),
         ),
         Expanded(
@@ -90,8 +103,14 @@ class _ControlPadPageState extends State<ControlPadPage> {
             child: ButtonControl(
               type: ButtonControlType.abxy,
               onPress: (String data) async {
-                if (writeChar != null) {
-                  await writeChar!.write(utf8.encode(data));
+                if (writeChar != null && !writing) {
+                  try {
+                    writing = true;
+                    await writeChar!.write(utf8.encode(data));
+                    writing = false;
+                  } catch (e) {
+                    log(e.toString());
+                  }
                 }
               },
             ),
