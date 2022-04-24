@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bluetooth_control_path/components/button_control.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue/flutter_blue.dart';
@@ -19,6 +20,8 @@ class ControlPadPage extends StatefulWidget {
 }
 
 class _ControlPadPageState extends State<ControlPadPage> {
+  BluetoothCharacteristic? writeChar;
+
   void _setup() {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
@@ -45,11 +48,57 @@ class _ControlPadPageState extends State<ControlPadPage> {
       if (state != BluetoothDeviceState.connected) {
         await widget.device.connect();
       }
+      var services = await widget.device.discoverServices();
+      for (var blueService in services) {
+        if (writeChar != null) break;
+        for (var blueChar in blueService.characteristics) {
+          if (blueChar.properties.write) {
+            setState(() {
+              writeChar = blueChar;
+            });
+            _showSnackBarMessage('Device connected!');
+            break;
+          }
+        }
+      }
     }
   }
 
   void _disconnectBluetooth() async {
     await widget.device.disconnect();
+  }
+
+  void _showSnackBarMessage(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+      ),
+    );
+  }
+
+  Widget _buildControlPad() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            color: Colors.blue,
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(38.0),
+            child: ButtonControl(
+              type: ButtonControlType.abxy,
+              onPress: (String data) async {
+                if (writeChar != null) {
+                  await writeChar!.write(utf8.encode(data));
+                }
+              },
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -72,8 +121,17 @@ class _ControlPadPageState extends State<ControlPadPage> {
       body: StreamBuilder(
         stream: widget.device.state,
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            _showSnackBarMessage('Cannot read bluetooth connection state');
+            return Container();
+          }
+          if (snapshot.hasData) {
+            if (snapshot.data == BluetoothDeviceState.connected) {
+              return _buildControlPad();
+            }
+          }
           return Center(
-            child: Text(snapshot.data.toString()),
+            child: Text('Connection state: ${snapshot.data.toString()}'),
           );
         },
       ),
