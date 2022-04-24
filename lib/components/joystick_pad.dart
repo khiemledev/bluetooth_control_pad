@@ -29,9 +29,7 @@ class _JoystickPadState extends State<JoystickPad> {
     Offset boxOffset = renderBox.localToGlobal(
       Offset(size.width / 2, size.height / 2),
     );
-    Offset offset = localPosition -
-        boxOffset +
-        Offset(widget.iconSize / 2, widget.iconSize / 2);
+    Offset offset = localPosition - boxOffset;
     offset = Offset(
       min(1.0, max(-1, offset.dx / (size.width / 2))),
       min(1.0, max(-1, offset.dy / (size.height / 2))),

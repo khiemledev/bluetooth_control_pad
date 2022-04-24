@@ -6,25 +6,38 @@ enum ButtonControlType {
   arrow,
 }
 
-enum ButtonControlData {
-  a,
-  b,
-  x,
-  y,
-  left,
-  right,
-  up,
-  down,
+class ButtonControlData {
+  final String? a;
+  final String? b;
+  final String? x;
+  final String? y;
+  final String? left;
+  final String? right;
+  final String? up;
+  final String? down;
+
+  ButtonControlData({
+    this.a = "a",
+    this.b = "b",
+    this.x = "x",
+    this.y = "y",
+    this.left = "left",
+    this.right = "right",
+    this.up = "up",
+    this.down = "down",
+  });
 }
 
 class ButtonControl extends StatelessWidget {
   final ButtonControlType type;
   final void Function(String)? onPress;
+  final ButtonControlData? buttonControlData;
 
   const ButtonControl({
     Key? key,
     this.type = ButtonControlType.abxy,
     required this.onPress,
+    this.buttonControlData,
   }) : super(key: key);
 
   Widget _buildButton({required IconData icon, void Function()? onPress}) {
@@ -64,9 +77,8 @@ class ButtonControl extends StatelessWidget {
                   if (onPress != null) {
                     onPress!(
                       (type == ButtonControlType.abxy
-                              ? ButtonControlData.y
-                              : ButtonControlData.up)
-                          .index
+                              ? buttonControlData!.y
+                              : buttonControlData!.up)
                           .toString(),
                     );
                   }
@@ -87,9 +99,8 @@ class ButtonControl extends StatelessWidget {
                   if (onPress != null) {
                     onPress!(
                       (type == ButtonControlType.abxy
-                              ? ButtonControlData.x
-                              : ButtonControlData.left)
-                          .index
+                              ? buttonControlData!.x
+                              : buttonControlData!.left)
                           .toString(),
                     );
                   }
@@ -104,9 +115,8 @@ class ButtonControl extends StatelessWidget {
                   if (onPress != null) {
                     onPress!(
                       (type == ButtonControlType.abxy
-                              ? ButtonControlData.b
-                              : ButtonControlData.right)
-                          .index
+                              ? buttonControlData!.b
+                              : buttonControlData!.right)
                           .toString(),
                     );
                   }
@@ -128,9 +138,8 @@ class ButtonControl extends StatelessWidget {
                     if (onPress != null) {
                       onPress!(
                         (type == ButtonControlType.abxy
-                                ? ButtonControlData.a
-                                : ButtonControlData.down)
-                            .index
+                                ? buttonControlData!.a
+                                : buttonControlData!.down)
                             .toString(),
                       );
                     }

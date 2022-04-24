@@ -3,9 +3,11 @@ import 'dart:developer';
 
 import 'package:bluetooth_control_path/components/button_control.dart';
 import 'package:bluetooth_control_path/components/joystick_pad.dart';
+import 'package:bluetooth_control_path/constants/shared_prefs_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue/flutter_blue.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ControlPadPage extends StatefulWidget {
   static const String name = 'control_pad_page';
@@ -22,8 +24,10 @@ class ControlPadPage extends StatefulWidget {
 }
 
 class _ControlPadPageState extends State<ControlPadPage> {
-  BluetoothCharacteristic? writeChar;
+  SharedPreferences? prefs;
   bool writing = false;
+  ButtonControlData? buttonControlData;
+  BluetoothCharacteristic? writeChar;
 
   void _setup() {
     SystemChrome.setPreferredOrientations([
@@ -85,7 +89,7 @@ class _ControlPadPageState extends State<ControlPadPage> {
         Expanded(
           child: JoystickPad(
             onUpdate: (String data) async {
-              if (writeChar != null && !writing) {
+              if (!writing) {
                 try {
                   writing = true;
                   await writeChar!.write(utf8.encode(data));
@@ -102,8 +106,9 @@ class _ControlPadPageState extends State<ControlPadPage> {
             padding: const EdgeInsets.all(38.0),
             child: ButtonControl(
               type: ButtonControlType.abxy,
+              buttonControlData: buttonControlData,
               onPress: (String data) async {
-                if (writeChar != null && !writing) {
+                if (!writing) {
                   try {
                     writing = true;
                     await writeChar!.write(utf8.encode(data));
@@ -120,10 +125,25 @@ class _ControlPadPageState extends State<ControlPadPage> {
     );
   }
 
+  void _getPadSettings() async {
+    prefs = await SharedPreferences.getInstance();
+    buttonControlData = ButtonControlData(
+      a: prefs!.getString(SharedPrefsKeys.a) ?? 'a',
+      b: prefs!.getString(SharedPrefsKeys.b) ?? 'b',
+      x: prefs!.getString(SharedPrefsKeys.x) ?? 'x',
+      y: prefs!.getString(SharedPrefsKeys.y) ?? 'y',
+      left: prefs!.getString(SharedPrefsKeys.left) ?? 'left',
+      right: prefs!.getString(SharedPrefsKeys.right) ?? 'right',
+      up: prefs!.getString(SharedPrefsKeys.up) ?? 'up',
+      down: prefs!.getString(SharedPrefsKeys.down) ?? 'down',
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _setup();
+    _getPadSettings();
     _connectBluetooth();
   }
 
