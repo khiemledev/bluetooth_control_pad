@@ -6,12 +6,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class JoystickPad extends StatefulWidget {
   final double iconSize;
   final double boundary;
+  final double activeBoundary;
   final void Function(String) onUpdate;
 
   const JoystickPad({
     Key? key,
     this.iconSize = 60,
     this.boundary = 255,
+    this.activeBoundary = 0.4,
     required this.onUpdate,
   }) : super(key: key);
 
@@ -56,6 +58,12 @@ class _JoystickPadState extends State<JoystickPad> {
               Offset offset = _calculateOffset(details.localPosition);
               String x = offset.dx.toStringAsFixed(1);
               String y = offset.dy.toStringAsFixed(1);
+              if (offset.dx < widget.activeBoundary) {
+                x = '0.0';
+              }
+              if (offset.dy < widget.activeBoundary) {
+                y = '0.0';
+              }
               widget.onUpdate('$x $y');
             },
             onDragEnd: (details) {
