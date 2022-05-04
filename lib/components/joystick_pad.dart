@@ -53,15 +53,15 @@ class _JoystickPadState extends State<JoystickPad> {
         height: widget.boundary,
         child: Center(
           child: Draggable(
-            dragAnchorStrategy: childDragAnchorStrategy,
+            dragAnchorStrategy: pointerDragAnchorStrategy,
             onDragUpdate: (details) {
               Offset offset = _calculateOffset(details.localPosition);
               String x = offset.dx.toStringAsFixed(1);
               String y = offset.dy.toStringAsFixed(1);
-              if (offset.dx < widget.activeBoundary) {
+              if (offset.dx.abs() < widget.activeBoundary) {
                 x = '0.0';
               }
-              if (offset.dy < widget.activeBoundary) {
+              if (offset.dy.abs() < widget.activeBoundary) {
                 y = '0.0';
               }
               widget.onUpdate('$x $y');
